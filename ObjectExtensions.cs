@@ -31,7 +31,8 @@ namespace System
 
         public static bool IsPrimitive(this Type type)
         {
-            return ((type.IsValueType | type == typeof(String)) & type.IsPrimitive);
+            if (type == typeof(String)) return true;
+            return (type.IsValueType & type.IsPrimitive);
         }
 
         public static Object Copy(this Object originalObject)
