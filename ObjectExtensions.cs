@@ -42,14 +42,21 @@ namespace System
         private static Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
         {
             if (originalObject == null) return null;
-            var originalObjectType = originalObject.GetType();
-            if (IsPrimitive(originalObjectType)) return originalObject;
+            var typeToReflect = originalObject.GetType();
+            if (IsPrimitive(typeToReflect)) return originalObject;
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             var cloneObject = CloneMethod.Invoke(originalObject, null);
             visited.Add(originalObject, cloneObject);
+            CopyFields(originalObject, visited, cloneObject, typeToReflect);
+            if (typeToReflect.BaseType != null) CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType, BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
+            return cloneObject;
+        }
 
-            foreach (FieldInfo fieldInfo in originalObjectType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy))
+        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
+        {
+            foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
+                if (filter != null && filter(fieldInfo) == false) continue;
                 if (IsPrimitive(fieldInfo.FieldType)) continue;
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
                 var clonedFieldValue = originalFieldValue == null ? null : InternalCopy(originalFieldValue, visited);
@@ -60,10 +67,10 @@ namespace System
                     var arrayType = fieldInfo.FieldType.GetElementType();
                     if (IsPrimitive(arrayType)) continue;
                     Array clonedArray = (Array)clonedFieldValue;
-                    for (long i = 0; i < clonedArray.LongLength; i++) clonedArray.SetValue(InternalCopy(clonedArray.GetValue(i), visited), i);
+                    for (long i = 0; i < clonedArray.LongLength; i++)
+                        clonedArray.SetValue(InternalCopy(clonedArray.GetValue(i), visited), i);
                 }
             }
-            return cloneObject;
         }
         public static T Copy<T>(this T original)
         {
