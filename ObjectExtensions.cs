@@ -1,33 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.ArrayExtensions;
 
 namespace System
 {
     public static class ObjectExtensions
     {
         private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        public static Object CreateInstance(Type type)
-        {
-            var instance = FormatterServices.GetUninitializedObject(type);
-            return instance;
-        }
-
-        public static T Clone<T>(this T obj)
-        {
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                BinaryFormatter serializer = new BinaryFormatter();
-                serializer.Serialize(memoryStream, obj);
-                memoryStream.Position = 0;
-                var copy = serializer.Deserialize(memoryStream);
-                return (T)copy;
-            }
-        }
 
         public static bool IsPrimitive(this Type type)
         {
@@ -46,6 +25,16 @@ namespace System
             if (IsPrimitive(typeToReflect)) return originalObject;
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             var cloneObject = CloneMethod.Invoke(originalObject, null);
+            if (typeToReflect.IsArray)
+            {
+                var arrayType = typeToReflect.GetElementType();
+                if (IsPrimitive(arrayType) == false)
+                {
+                    Array clonedArray = (Array)cloneObject;
+                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
+                }
+
+            }
             visited.Add(originalObject, cloneObject);
             CopyFields(originalObject, visited, cloneObject, typeToReflect);
             RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
@@ -70,15 +59,6 @@ namespace System
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
                 var clonedFieldValue = originalFieldValue == null ? null : InternalCopy(originalFieldValue, visited);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
-                if (clonedFieldValue == null) continue;
-                if (fieldInfo.FieldType.IsArray)
-                {
-                    var arrayType = fieldInfo.FieldType.GetElementType();
-                    if (IsPrimitive(arrayType)) continue;
-                    Array clonedArray = (Array)clonedFieldValue;
-                    for (long i = 0; i < clonedArray.LongLength; i++)
-                        clonedArray.SetValue(InternalCopy(clonedArray.GetValue(i), visited), i);
-                }
             }
         }
         public static T Copy<T>(this T original)
@@ -86,18 +66,64 @@ namespace System
             return (T)Copy((Object)original);
         }
     }
-	
-	public class ReferenceEqualityComparer : EqualityComparer<Object>
+
+    public class ReferenceEqualityComparer : EqualityComparer<Object>
     {
         public override bool Equals(object x, object y)
         {
             return ReferenceEquals(x, y);
         }
-
         public override int GetHashCode(object obj)
         {
             if (obj == null) return 0;
             return obj.GetHashCode();
         }
     }
+
+    namespace ArrayExtensions
+    {
+        public static class ArrayExtensions
+        {
+            public static void ForEach(this Array array, Action<Array, int[]> action)
+            {
+                ArrayTraverse walker = new ArrayTraverse(array);
+                do action(array, walker.Position);
+                while (walker.Step());
+            }
+        }
+
+        internal class ArrayTraverse
+        {
+            public int[] Position;
+            private int[] maxLengths;
+
+            public ArrayTraverse(Array array)
+            {
+                maxLengths = new int[array.Rank];
+                for (int i = 0; i < array.Rank; ++i)
+                {
+                    maxLengths[i] = array.GetLength(i) - 1;
+                }
+                Position = new int[array.Rank];
+            }
+
+            public bool Step()
+            {
+                for (int i = 0; i < Position.Length; ++i)
+                {
+                    if (Position[i] < maxLengths[i])
+                    {
+                        Position[i]++;
+                        for (int j = 0; j < i; j++)
+                        {
+                            Position[j] = 0;
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
 }
