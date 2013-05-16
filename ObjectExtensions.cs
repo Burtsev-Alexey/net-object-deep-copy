@@ -33,7 +33,6 @@ namespace System
                     Array clonedArray = (Array)cloneObject;
                     clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
                 }
-
             }
             visited.Add(originalObject, cloneObject);
             CopyFields(originalObject, visited, cloneObject, typeToReflect);
@@ -87,6 +86,7 @@ namespace System
             public static void ForEach(this Array array, Action<Array, int[]> action)
             {
                 ArrayTraverse walker = new ArrayTraverse(array);
+                if (walker.IsEmpty) return;
                 do action(array, walker.Position);
                 while (walker.Step());
             }
@@ -96,6 +96,7 @@ namespace System
         {
             public int[] Position;
             private int[] maxLengths;
+            public bool IsEmpty { get; private set; }
 
             public ArrayTraverse(Array array)
             {
@@ -105,6 +106,7 @@ namespace System
                     maxLengths[i] = array.GetLength(i) - 1;
                 }
                 Position = new int[array.Rank];
+                IsEmpty = Position[0] > maxLengths[0];
             }
 
             public bool Step()
@@ -125,5 +127,4 @@ namespace System
             }
         }
     }
-
 }
