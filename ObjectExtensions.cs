@@ -24,16 +24,27 @@ namespace System
             var typeToReflect = originalObject.GetType();
             if (IsPrimitive(typeToReflect)) return originalObject;
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
-            var cloneObject = CloneMethod.Invoke(originalObject, null);
+            object cloneObject = null;
             if (typeToReflect.IsArray)
             {
                 var arrayType = typeToReflect.GetElementType();
+
+                Array originalArray = (Array)originalObject;
+                Array clonedArray = Array.CreateInstance(arrayType, originalArray.Length);
+                cloneObject = clonedArray;
+
                 if (IsPrimitive(arrayType) == false)
                 {
-                    Array clonedArray = (Array)cloneObject;
-                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
+                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(originalArray.GetValue(indices), visited), indices));
                 }
-
+                else
+                {
+                    Array.Copy(originalArray, clonedArray, clonedArray.Length);
+                }
+            }
+            else
+            {
+                cloneObject = CloneMethod.Invoke(originalObject, null);
             }
             visited.Add(originalObject, cloneObject);
             CopyFields(originalObject, visited, cloneObject, typeToReflect);
