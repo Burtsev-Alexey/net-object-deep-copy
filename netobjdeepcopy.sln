@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "netobjdeepcopy", "netobjdeepcopy.csproj", "{7900459D-F2F7-461F-948A-FFE4EEFF6148}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "unittests", "unittests\unittests.csproj", "{F3B0CDAD-046C-4023-B980-C5EA0FCE9D9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7900459D-F2F7-461F-948A-FFE4EEFF6148}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7900459D-F2F7-461F-948A-FFE4EEFF6148}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7900459D-F2F7-461F-948A-FFE4EEFF6148}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7900459D-F2F7-461F-948A-FFE4EEFF6148}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3B0CDAD-046C-4023-B980-C5EA0FCE9D9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3B0CDAD-046C-4023-B980-C5EA0FCE9D9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3B0CDAD-046C-4023-B980-C5EA0FCE9D9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3B0CDAD-046C-4023-B980-C5EA0FCE9D9B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
