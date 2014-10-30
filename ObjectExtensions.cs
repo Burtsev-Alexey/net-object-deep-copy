@@ -38,7 +38,6 @@ namespace System
             }
             visited.Add(originalObject, cloneObject);
             CopyFields(originalObject, visited, cloneObject, typeToReflect,info => !info.IsStatic && !info.FieldType.GetTypeInfo().IsPrimitive);
-            CopyProperties(originalObject, visited, cloneObject, typeToReflect, info => !info.GetMethod.IsStatic && !info.PropertyType.GetTypeInfo().IsPrimitive);
             RecursiveCopyBaseTypeFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
         }
@@ -49,7 +48,6 @@ namespace System
             {
                 RecursiveCopyBaseTypeFields(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType);
                 CopyFields(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType, info => !info.IsStatic && !info.FieldType.GetTypeInfo().IsPrimitive);
-                CopyProperties(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType, info => !info.GetMethod.IsStatic && !info.PropertyType.GetTypeInfo().IsPrimitive);
             }
         }
 
@@ -67,22 +65,7 @@ namespace System
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
-
-        private static void CopyProperties(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, Predicate<PropertyInfo> filter = null)
-        {
-            List<PropertyInfo> filtered = new List<PropertyInfo>(typeToReflect.GetTypeInfo().DeclaredProperties);
-            if(filter != null)
-            {
-                filtered = filtered.FindAll(filter);
-            }
-            foreach (PropertyInfo propertyInfo in filtered)
-            {
-                if (IsValue(propertyInfo.PropertyType)) continue;
-                var originalFieldValue = propertyInfo.GetValue(originalObject);
-                var clonedFieldValue = InternalCopy(originalFieldValue, visited);
-                propertyInfo.SetValue(cloneObject, clonedFieldValue);
-            }
-        }
+		
         public static T Copy<T>(this T original)
         {
             return (T)Copy((Object)original);
