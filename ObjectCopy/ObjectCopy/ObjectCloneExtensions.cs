@@ -62,6 +62,7 @@ namespace ObjectCopy
                 Array originalArray = (Array)originalObject;
                 Array clonedArray = Array.CreateInstance(arrayType, originalArray.Length);
                 cloneObject = clonedArray;
+                visited.Add(originalObject, cloneObject);
 
                 if (IsValue(arrayType) == false)
                 {
@@ -76,9 +77,9 @@ namespace ObjectCopy
             else
             {
                 cloneObject = CloneMethod.Invoke(originalObject, null);
+                visited.Add(originalObject, cloneObject);
             }
 
-            visited.Add(originalObject, cloneObject);
             CopyFields(originalObject, visited, cloneObject, typeToReflect);
             RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
