@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace ObjectCopy
 {
@@ -10,9 +11,9 @@ namespace ObjectCopy
     /// </summary>
     public static class ObjectCloneExtensions
     {
-        private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly MethodInfo CloneMethod = typeof(Object).GetTypeInfo().GetDeclaredMethod("MemberwiseClone");
 
-        public static bool IsPrimitive(this Type type)
+        public static bool IsValue(this Type type)
         {
             if (type == typeof(String)) return true;
             return (type.IsValueType & type.IsPrimitive);
@@ -29,7 +30,7 @@ namespace ObjectCopy
             if (originalObject == null) return null;
             var typeToReflect = originalObject.GetType();
 
-            if (IsPrimitive(typeToReflect))
+            if (IsValue(typeToReflect))
             {
                 if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
                 {
@@ -41,6 +42,7 @@ namespace ObjectCopy
                 }
             }
 
+            if (typeof(XElement).IsAssignableFrom(typeToReflect)) return new XElement(originalObject as XElement);
 
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
@@ -61,7 +63,7 @@ namespace ObjectCopy
                 Array clonedArray = Array.CreateInstance(arrayType, originalArray.Length);
                 cloneObject = clonedArray;
 
-                if (IsPrimitive(arrayType) == false)
+                if (IsValue(arrayType) == false)
                 {
                     clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(originalArray.GetValue(indices), visited), indices));
                 }
@@ -96,7 +98,7 @@ namespace ObjectCopy
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
                 if (filter != null && filter(fieldInfo) == false) continue;
-                if (IsPrimitive(fieldInfo.FieldType))
+                if (IsValue(fieldInfo.FieldType))
                 {
                     if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
                     {
