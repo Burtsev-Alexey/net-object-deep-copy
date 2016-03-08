@@ -29,7 +29,19 @@ namespace ObjectCopy
             if (originalObject == null) return null;
             var typeToReflect = originalObject.GetType();
 
-            if (IsPrimitive(typeToReflect)) return originalObject;
+            if (IsPrimitive(typeToReflect))
+            {
+                if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                {
+                    return null;
+                }
+                else
+                {
+                    return originalObject;
+                }
+            }
+
+
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
 
@@ -84,7 +96,40 @@ namespace ObjectCopy
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
                 if (filter != null && filter(fieldInfo) == false) continue;
-                if (IsPrimitive(fieldInfo.FieldType)) continue;
+                if (IsPrimitive(fieldInfo.FieldType))
+                {
+                    if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                    {
+                        if (fieldInfo.FieldType == typeof(string))
+                        {
+                            fieldInfo.SetValue(cloneObject, null);
+                        }
+                        else
+                        {
+                            fieldInfo.SetValue(cloneObject, Activator.CreateInstance(fieldInfo.FieldType));
+                        }
+                        continue;
+                    }
+
+                    if (fieldInfo.IsBackingField())
+                    {
+                        var property = fieldInfo.GetBackingFieldProperty(typeToReflect, bindingFlags);
+                        if (property.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                        {
+                            if (fieldInfo.FieldType == typeof(string))
+                            {
+                                fieldInfo.SetValue(cloneObject, null);
+                            }
+                            else
+                            {
+                                fieldInfo.SetValue(cloneObject, Activator.CreateInstance(fieldInfo.FieldType));
+                            }
+                        }
+                    }
+
+                    continue;
+                }
+
                 if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
                 {
                     fieldInfo.SetValue(cloneObject, null);
