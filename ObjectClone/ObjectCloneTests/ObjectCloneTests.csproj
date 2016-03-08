@@ -62,7 +62,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ObjectCopy\ObjectClone.csproj">
+    <ProjectReference Include="..\ObjectClone\ObjectClone.csproj">
       <Project>{5de0b23c-e49a-4da1-8225-4536bdef8ec6}</Project>
       <Name>ObjectClone</Name>
     </ProjectReference>

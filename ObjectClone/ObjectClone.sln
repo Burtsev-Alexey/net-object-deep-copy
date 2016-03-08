@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectClone", "ObjectCopy\ObjectClone.csproj", "{5DE0B23C-E49A-4DA1-8225-4536BDEF8EC6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectClone", "ObjectClone\ObjectClone.csproj", "{5DE0B23C-E49A-4DA1-8225-4536BDEF8EC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectCloneTests", "ObjectCopyTests\ObjectCloneTests.csproj", "{66F83262-99A8-4A27-9C7F-9504BAD950C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectCloneTests", "ObjectCloneTests\ObjectCloneTests.csproj", "{66F83262-99A8-4A27-9C7F-9504BAD950C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
