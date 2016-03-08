@@ -26,10 +26,10 @@ namespace ObjectCopy
 
         public Object Copy(Object originalObject)
         {
-            return this.InternalCopy(originalObject, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
+            return this.InternalCopy(originalObject, new Dictionary<Object, Object>(new ReferenceEqualityComparer()),true);
         }
 
-        private Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
+        private Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited, bool checkObjectGraph)
         {
             if (originalObject == null) return null;
             var typeToReflect = originalObject.GetType();
@@ -48,7 +48,7 @@ namespace ObjectCopy
 
             if (typeof(XElement).IsAssignableFrom(typeToReflect)) return new XElement(originalObject as XElement);
 
-            if (visited.ContainsKey(originalObject)) return visited[originalObject];
+            if (checkObjectGraph && visited.ContainsKey(originalObject)) return visited[originalObject];
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
 
             if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
@@ -66,7 +66,7 @@ namespace ObjectCopy
                 Array originalArray = (Array)originalObject;
                 Array clonedArray = Array.CreateInstance(arrayType, originalArray.Length);
                 cloneObject = clonedArray;
-                visited.Add(originalObject, cloneObject);
+                if (checkObjectGraph) visited.Add(originalObject, cloneObject);
 
                 if (arrayType.IsPrimitive())
                 {
@@ -74,7 +74,7 @@ namespace ObjectCopy
                 }
                 else if (typeToReflect.IsPrimitive() == false)
                 {
-                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(originalArray.GetValue(indices), visited), indices));
+                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(originalArray.GetValue(indices), visited, !arrayType.IsValueType), indices));
                 }
                 else
                 {
@@ -85,7 +85,7 @@ namespace ObjectCopy
             else
             {
                 cloneObject = CloneMethod.Invoke(originalObject);
-                visited.Add(originalObject, cloneObject);
+                if(checkObjectGraph)visited.Add(originalObject, cloneObject);
             }
 
             CopyFields(originalObject, visited, cloneObject, typeToReflect);
@@ -208,7 +208,7 @@ namespace ObjectCopy
                 }
 
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
-                var clonedFieldValue = InternalCopy(originalFieldValue, visited);
+                var clonedFieldValue = InternalCopy(originalFieldValue, visited, !fieldInfo.FieldType.IsValueType);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
