@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
 
@@ -11,7 +12,15 @@ namespace ObjectCopy
     /// </summary>
     public static class ObjectCloneExtensions
     {
-        private static readonly MethodInfo CloneMethod = typeof(Object).GetTypeInfo().GetDeclaredMethod("MemberwiseClone");
+        private static Func<object, object> CloneMethod;
+
+        static ObjectCloneExtensions()
+        {
+            MethodInfo cloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+            var p1 = Expression.Parameter(typeof(object));
+            var body = Expression.Call(p1, cloneMethod);
+            CloneMethod = Expression.Lambda<Func<object, object>>(body, p1).Compile();
+        }
 
         public static bool IsPrimitive(this Type type)
         {
@@ -76,7 +85,7 @@ namespace ObjectCopy
             }
             else
             {
-                cloneObject = CloneMethod.Invoke(originalObject, null);
+                cloneObject = CloneMethod.Invoke(originalObject);
                 visited.Add(originalObject, cloneObject);
             }
 
