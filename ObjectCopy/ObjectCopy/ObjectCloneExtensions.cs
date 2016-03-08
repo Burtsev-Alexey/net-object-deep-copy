@@ -22,10 +22,13 @@ namespace ObjectCopy
             CloneMethod = Expression.Lambda<Func<object, object>>(body, p1).Compile();
         }
 
-        public static bool IsPrimitive(this Type type)
+        private static bool IsPrimitive(Type type)
         {
+            if (type.IsValueType && type.IsPrimitive) return true;
             if (type == typeof(String)) return true;
-            return (type.IsValueType & type.IsPrimitive);
+            if (type == typeof(Decimal)) return true;
+            if (type == typeof(DateTime)) return true;
+            return false;
         }
 
 
@@ -103,62 +106,74 @@ namespace ObjectCopy
             }
         }
 
-        private static IEnumerable<FieldInfo> FieldsRequiringDeepClone(Type typeToReflect)
+        private static IEnumerable<FieldInfo> FieldsRequiringDeepClone(Type typeToReflect, object cloneObject)
         {
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy))
             {
-                if (IsPrimitive(fieldInfo.FieldType)) continue;
+                if (IsPrimitive(fieldInfo.FieldType))
+                {
+                    UndoShallowCopyOfPrimitiveTypesWithIgnoreCopyAttribute(fieldInfo, cloneObject, typeToReflect, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+                    continue;
+                }
                 yield return fieldInfo;
             }
 
-            while (typeToReflect.BaseType != null)         
+            while (typeToReflect.BaseType != null)
             {
                 typeToReflect = typeToReflect.BaseType;
 
                 foreach (FieldInfo fieldInfo in typeToReflect.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
                 {
-                    if (!fieldInfo.IsPrivate) continue;       
-                    if (IsPrimitive(fieldInfo.FieldType)) continue;
+                    if (!fieldInfo.IsPrivate) continue;
+                    if (IsPrimitive(fieldInfo.FieldType))
+                    {
+                        UndoShallowCopyOfPrimitiveTypesWithIgnoreCopyAttribute(fieldInfo, cloneObject, typeToReflect, BindingFlags.Instance | BindingFlags.NonPublic);
+                        continue;
+                    }
                     yield return fieldInfo;
+                }
+            }
+        }
+
+        private static void UndoShallowCopyOfPrimitiveTypesWithIgnoreCopyAttribute(FieldInfo fieldInfo,object cloneObject,Type typeToReflect,BindingFlags bindingFlags)
+        {
+            if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+            {
+                if (fieldInfo.FieldType == typeof(string))
+                {
+                    fieldInfo.SetValue(cloneObject, null);
+                }
+                else
+                {
+                    fieldInfo.SetValue(cloneObject, Activator.CreateInstance(fieldInfo.FieldType));
+                }
+            }
+
+            if (fieldInfo.IsBackingField())
+            {
+                var property = fieldInfo.GetBackingFieldProperty(typeToReflect, bindingFlags);
+                if (property.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                {
+                    if (fieldInfo.FieldType == typeof(string))
+                    {
+                        fieldInfo.SetValue(cloneObject, null);
+                    }
+                    else
+                    {
+                        fieldInfo.SetValue(cloneObject, Activator.CreateInstance(fieldInfo.FieldType));
+                    }
                 }
             }
         }
 
         private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
         {
-            foreach (FieldInfo fieldInfo in FieldsRequiringDeepClone(typeToReflect))
+            foreach (FieldInfo fieldInfo in FieldsRequiringDeepClone(typeToReflect,cloneObject))
             {
                 if (filter != null && filter(fieldInfo) == false) continue;
                 if (IsPrimitive(fieldInfo.FieldType))
                 {
-                    if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
-                    {
-                        if (fieldInfo.FieldType == typeof(string))
-                        {
-                            fieldInfo.SetValue(cloneObject, null);
-                        }
-                        else
-                        {
-                            fieldInfo.SetValue(cloneObject, Activator.CreateInstance(fieldInfo.FieldType));
-                        }
-                        continue;
-                    }
-
-                    if (fieldInfo.IsBackingField())
-                    {
-                        var property = fieldInfo.GetBackingFieldProperty(typeToReflect, bindingFlags);
-                        if (property.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
-                        {
-                            if (fieldInfo.FieldType == typeof(string))
-                            {
-                                fieldInfo.SetValue(cloneObject, null);
-                            }
-                            else
-                            {
-                                fieldInfo.SetValue(cloneObject, Activator.CreateInstance(fieldInfo.FieldType));
-                            }
-                        }
-                    }
+                 
 
                     continue;
                 }

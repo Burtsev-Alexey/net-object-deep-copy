@@ -8,10 +8,13 @@ namespace ObjectCopy
 {
     public static class ObjectCloneVerifierExtensions
     {
-        public static bool IsPrimitive(this Type type)
+        private static bool IsPrimitive(Type type)
         {
+            if (type.IsValueType && type.IsPrimitive) return true;
             if (type == typeof(String)) return true;
-            return (type.IsValueType & type.IsPrimitive);
+            if (type == typeof(Decimal)) return true;
+            if (type == typeof(DateTime)) return true;
+            return false;
         }
 
         public static bool Verify(this Object originalObject, object copyObject)
