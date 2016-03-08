@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Lifetime;
 
 namespace ObjectCopy
 {
@@ -34,17 +35,29 @@ namespace ObjectCopy
 
             if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute))) return originalObject;
 
-            var cloneObject = CloneMethod.Invoke(originalObject, null);
+            object cloneObject = null;
 
             if (typeToReflect.IsArray)
             {
                 var arrayType = typeToReflect.GetElementType();
+
+                Array originalArray = (Array)originalObject;
+                Array clonedArray = Array.CreateInstance(arrayType, originalArray.Length);
+                cloneObject = clonedArray;
+
                 if (IsPrimitive(arrayType) == false)
                 {
-                    Array clonedArray = (Array)cloneObject;
-                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
+                    clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(originalArray.GetValue(indices), visited), indices));
+                }
+                else
+                {
+                     Array.Copy(originalArray, clonedArray, clonedArray.Length);
                 }
 
+            }
+            else
+            {
+                cloneObject = CloneMethod.Invoke(originalObject, null);
             }
 
             visited.Add(originalObject, cloneObject);
