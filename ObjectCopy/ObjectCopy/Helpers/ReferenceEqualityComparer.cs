@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace ObjectCopy
+namespace ObjectClone.Helpers
 {
     public class ReferenceEqualityComparer : EqualityComparer<object>
     {

@@ -5,10 +5,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{5DE0B23C-E49A-4DA1-8225-4536BDEF8EC6}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ObjectCopy</RootNamespace>
-    <AssemblyName>ObjectCopy</AssemblyName>
+    <RootNamespace>ObjectClone</RootNamespace>
+    <AssemblyName>ObjectClone</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,26 +31,26 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayExtensions.cs" />
-    <Compile Include="ArrayTraverse.cs" />
-    <Compile Include="IgnoreCopyAttribute.cs" />
-    <Compile Include="ObjectCloneExtensions.cs" />
-    <Compile Include="ObjectCloneVerifierExtensions.cs" />
-    <Compile Include="ObjectUniquenessManagment.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Helpers\ArrayExtensions.cs" />
+    <Compile Include="Helpers\ArrayTraverse.cs" />
+    <Compile Include="Attributes\IgnoreCloneAttribute.cs" />
+    <Compile Include="Helpers\ObjectCloneExtensions.cs" />
+    <Compile Include="Cloning\ObjectCloneManager.cs" />
+    <Compile Include="Cloning\ObjectCloneVerifier.cs" />
+    <Compile Include="Helpers\ObjectUniquenessManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReferenceEqualityComparer.cs" />
-    <Compile Include="ShallowCloneAttribute.cs" />
+    <Compile Include="Helpers\ReferenceEqualityComparer.cs" />
+    <Compile Include="Attributes\ShallowCloneAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

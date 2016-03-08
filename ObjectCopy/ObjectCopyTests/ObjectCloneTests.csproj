@@ -7,8 +7,8 @@
     <ProjectGuid>{66F83262-99A8-4A27-9C7F-9504BAD950C6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ObjectCopyTests</RootNamespace>
-    <AssemblyName>ObjectCopyTests</AssemblyName>
+    <RootNamespace>ObjectCloneTests</RootNamespace>
+    <AssemblyName>ObjectCloneTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -36,9 +36,6 @@
     <Reference Include="ApprovalUtilities">
       <HintPath>..\packages\ApprovalUtilities.3.0.10\lib\net45\ApprovalUtilities.dll</HintPath>
     </Reference>
-    <Reference Include="ApprovalUtilities.Net45">
-      <HintPath>..\packages\ApprovalUtilities.3.0.10\lib\net45\ApprovalUtilities.Net45.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -50,25 +47,24 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ICloneable.cs" />
-    <Compile Include="ObjectCopyTests.cs" />
+    <Compile Include="ObjectCloneTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestObject.cs" />
-    <Compile Include="TestObject2.cs" />
+    <Compile Include="TestClass.cs" />
+    <Compile Include="TestClass2.cs" />
+    <Compile Include="TestClass3.cs" />
+    <Compile Include="TestClass4.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ObjectCopy\ObjectCopy.csproj">
+    <ProjectReference Include="..\ObjectCopy\ObjectClone.csproj">
       <Project>{5de0b23c-e49a-4da1-8225-4536bdef8ec6}</Project>
-      <Name>ObjectCopy</Name>
+      <Name>ObjectClone</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

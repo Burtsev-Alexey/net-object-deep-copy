@@ -1,1 +1,0 @@
-﻿{"DictionaryProp":{"A":{"StringProp":"Three"},"B":{"StringProp":"Three"},"C":{"StringProp":"Three"},"D":{"StringProp":"Three"}}}
