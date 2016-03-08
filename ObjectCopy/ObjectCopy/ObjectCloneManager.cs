@@ -12,8 +12,8 @@ namespace ObjectCopy
     /// </summary>
     public class ObjectCloneManager
     {
-        private  Func<object, object> CloneMethod;
-        private  Dictionary<Type, FieldInfo[]> fieldsRequiringDeepClone;
+        private Func<object, object> CloneMethod;
+        private Dictionary<Type, FieldInfo[]> fieldsRequiringDeepClone;
 
         public ObjectCloneManager()
         {
@@ -29,7 +29,7 @@ namespace ObjectCopy
             return this.InternalCopy(originalObject, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
         }
 
-        private  Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
+        private Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
         {
             if (originalObject == null) return null;
             var typeToReflect = originalObject.GetType();
@@ -68,7 +68,11 @@ namespace ObjectCopy
                 cloneObject = clonedArray;
                 visited.Add(originalObject, cloneObject);
 
-                if (arrayType.IsPrimitive() == false)
+                if (arrayType.IsPrimitive())
+                {
+                    //ignore array of primitive, shallow copy will suffic
+                }
+                else if (typeToReflect.IsPrimitive() == false)
                 {
                     clonedArray.ForEach((array, indices) => array.SetValue(InternalCopy(originalArray.GetValue(indices), visited), indices));
                 }
@@ -89,7 +93,7 @@ namespace ObjectCopy
             return cloneObject;
         }
 
-        private  void RecursiveCopyBaseTypePrivateFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect)
+        private void RecursiveCopyBaseTypePrivateFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect)
         {
             if (typeToReflect.BaseType != null)
             {
@@ -111,7 +115,7 @@ namespace ObjectCopy
             return result;
         }
 
-        private  IEnumerable<FieldInfo> FieldsRequiringDeepClone(Type typeToReflect, object cloneObject)
+        private IEnumerable<FieldInfo> FieldsRequiringDeepClone(Type typeToReflect, object cloneObject)
         {
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy))
             {
@@ -171,7 +175,7 @@ namespace ObjectCopy
             }
         }
 
-        private  void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
+        private void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
         {
             foreach (FieldInfo fieldInfo in CachedFieldsRequiringDeepClone(typeToReflect, cloneObject))
             {
