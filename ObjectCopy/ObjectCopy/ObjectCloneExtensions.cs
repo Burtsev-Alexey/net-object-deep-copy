@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Lifetime;
 
 namespace ObjectCopy
 {
@@ -19,6 +18,7 @@ namespace ObjectCopy
             return (type.IsValueType & type.IsPrimitive);
         }
 
+
         public static Object Copy(this Object originalObject)
         {
             return InternalCopy(originalObject, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
@@ -33,7 +33,11 @@ namespace ObjectCopy
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
 
-            if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute))) return originalObject;
+            if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                return null;
+
+            if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute)))
+                return originalObject;
 
             object cloneObject = null;
 
@@ -51,7 +55,7 @@ namespace ObjectCopy
                 }
                 else
                 {
-                     Array.Copy(originalArray, clonedArray, clonedArray.Length);
+                    Array.Copy(originalArray, clonedArray, clonedArray.Length);
                 }
 
             }
@@ -81,11 +85,23 @@ namespace ObjectCopy
             {
                 if (filter != null && filter(fieldInfo) == false) continue;
                 if (IsPrimitive(fieldInfo.FieldType)) continue;
-                if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute))) continue;
+                if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                {
+                    fieldInfo.SetValue(cloneObject, null);
+                    continue;
+                }
+
+                if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute)))
+                    continue;
 
                 if (fieldInfo.IsBackingField())
                 {
                     var property = fieldInfo.GetBackingFieldProperty(typeToReflect, bindingFlags);
+                    if (property.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                    {
+                        fieldInfo.SetValue(cloneObject, null);
+                        continue;
+                    }
                     if (property.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute))) continue;
                 }
 

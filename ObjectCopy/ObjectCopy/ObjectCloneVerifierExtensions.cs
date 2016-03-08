@@ -29,6 +29,9 @@ namespace ObjectCopy
 
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return copyObject == null;
 
+            if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute))) 
+                return copyObject == null;
+
             if (typeToReflect.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute)))
                 return ReferenceEquals(originalObject, copyObject);
 
@@ -85,22 +88,35 @@ namespace ObjectCopy
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
                 var copyFieldValue = fieldInfo.GetValue(cloneObject);
 
+                if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                {
+                    aggregateState &= copyFieldValue == null;
+                    continue;
+                }
+
                 if (fieldInfo.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute)))
                 {
-                    aggregateState = ReferenceEquals(originalFieldValue, copyFieldValue);
+                    aggregateState &= ReferenceEquals(originalFieldValue, copyFieldValue);
                     continue;
                 }
 
                 if (fieldInfo.IsBackingField())
                 {
+
                     var property = fieldInfo.GetBackingFieldProperty(typeToReflect, bindingFlags);
+
+                    if (property.CustomAttributes.Any(x => x.AttributeType == typeof(IgnoreCopyAttribute)))
+                    {
+                        aggregateState &= copyFieldValue == null;
+                        continue;
+                    }
+
                     if (property.CustomAttributes.Any(x => x.AttributeType == typeof(ShallowCloneAttribute)))
                     {
-                        aggregateState = ReferenceEquals(originalFieldValue, copyFieldValue);
+                        aggregateState &= ReferenceEquals(originalFieldValue, copyFieldValue);
                         continue;
                     }
                 }
-
 
                 var result = InternalVerify(originalFieldValue, copyFieldValue);
 

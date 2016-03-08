@@ -11,6 +11,9 @@ namespace ObjectCopyTests
         public TestObject2 ObjectProp { get; set; }
         [ShallowClone]
         public TestObject2 ObjectProp2 { get; set; }
+
+        [IgnoreCopy]
+        public TestObject2 ObjectProp3 { get; set; }
         public TestObject2[] ObjectCollection { get; set; }
         public List<TestObject2> ObjectCollection2 { get; set; }
         public Dictionary<string, TestObject2> DictionaryProp { get; set; }
@@ -22,6 +25,8 @@ namespace ObjectCopyTests
             this.StringProp2 = "Two";
             this.ObjectProp = new TestObject2();
             this.ObjectProp2 = new TestObject2();
+            this.ObjectProp3 = new TestObject2();
+
             this.ObjectCollection = new TestObject2[] { new TestObject2(), new TestObject2(), new TestObject2() };
             this.ObjectCollection2 = new List<TestObject2>()
             {

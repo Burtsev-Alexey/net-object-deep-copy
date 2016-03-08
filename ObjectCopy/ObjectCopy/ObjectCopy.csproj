@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="ArrayExtensions.cs" />
     <Compile Include="ArrayTraverse.cs" />
+    <Compile Include="IgnoreCopyAttribute.cs" />
     <Compile Include="ObjectCloneExtensions.cs" />
     <Compile Include="ObjectCloneVerifierExtensions.cs" />
     <Compile Include="ObjectUniquenessManagment.cs" />
