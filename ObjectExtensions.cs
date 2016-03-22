@@ -6,6 +6,9 @@ namespace System
 {
     public static class ObjectExtensions
     {
+        [AttributeUsage(AttributeTargets.Class|System.AttributeTargets.Field|System.AttributeTargets.Property)]
+        public class NoCopy : Attribute { }
+
         private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public static bool IsPrimitive(this Type type)
@@ -22,6 +25,12 @@ namespace System
         {
             if (originalObject == null) return null;
             var typeToReflect = originalObject.GetType();
+            var attributes = System.Attribute.GetCustomAttributes(typeToReflect);
+            foreach (var attribute in attributes)
+            {
+                if (attribute is NoCopy)
+                    return originalObject;
+            }
             if (IsPrimitive(typeToReflect)) return originalObject;
             if (visited.ContainsKey(originalObject)) return visited[originalObject];
             if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
