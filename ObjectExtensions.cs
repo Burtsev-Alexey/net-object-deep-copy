@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.ArrayExtensions;
+using System.Text.RegularExpressions;
 
 namespace System
 {
@@ -37,6 +38,7 @@ namespace System
 
             }
             visited.Add(originalObject, cloneObject);
+            if (typeToReflect == typeof(Regex)) return cloneObject;
             CopyFields(originalObject, visited, cloneObject, typeToReflect);
             RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
